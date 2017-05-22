@@ -1,0 +1,28 @@
+{
+    "name": "kelunik/streaming-json",
+    "description": "A streaming JSON parser for Amp.",
+    "type": "library",
+    "license": "MIT",
+    "minimum-stability": "dev",
+    "authors": [
+        {
+            "name": "Niklas Keller",
+            "email": "me@kelunik.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Kelunik\\StreamingJson\\": "src"
+        }
+    },
+    "require": {
+        "amphp/amp": "^2",
+        "amphp/socket": "dev-amp_v2",
+        "amphp/byte-stream": "dev-master",
+        "daverandom/exceptional-json": "dev-master"
+    },
+    "require-dev": {
+        "amphp/artax": "^3",
+        "friendsofphp/php-cs-fixer": "^2.3"
+    }
+}
