@@ -19,7 +19,8 @@
         "amphp/amp": "^2",
         "amphp/socket": "dev-amp_v2",
         "amphp/byte-stream": "dev-master",
-        "daverandom/exceptional-json": "dev-master"
+        "daverandom/exceptional-json": "dev-master",
+        "amphp/phpunit-util": "dev-master"
     },
     "require-dev": {
         "amphp/artax": "^3",

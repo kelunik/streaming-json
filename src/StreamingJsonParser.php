@@ -5,16 +5,19 @@ namespace Kelunik\StreamingJson;
 use Amp\ByteStream;
 use Amp\ByteStream\InputStream;
 use Amp\ByteStream\Parser;
+use function Amp\call;
 use Amp\CallableMaker;
 use Amp\Emitter;
 use Amp\Iterator;
 use Amp\Promise;
+use Amp\Success;
 use ExceptionalJSON\DecodeErrorException;
 use function ExceptionalJSON\decode;
 
 class StreamingJsonParser implements Iterator {
     use CallableMaker;
 
+    private $source;
     private $parser;
     private $emitter;
     private $iterator;
@@ -23,16 +26,27 @@ class StreamingJsonParser implements Iterator {
     private $depth;
     private $options;
 
+    private $backpressure;
+
     public function __construct(InputStream $inputStream, bool $assoc = false, $depth = 512, int $options = 0) {
         $this->assoc = $assoc;
         $this->depth = $depth;
         $this->options = $options;
 
+        $this->backpressure = new Success;
+        $this->source = $inputStream;
         $this->emitter = new Emitter;
         $this->iterator = $this->emitter->iterate();
         $this->parser = new Parser($this->parse());
 
-        ByteStream\pipe($inputStream, $this->parser)->onResolve($this->callableFromInstanceMethod("handleStreamEnd"));
+        call($this->callableFromInstanceMethod("pipe"))->onResolve($this->callableFromInstanceMethod("handleStreamEnd"));
+    }
+
+    private function pipe(): \Generator {
+        while (null !== $chunk = yield $this->source->read()) {
+            yield $this->parser->write($chunk);
+            yield $this->backpressure;
+        }
     }
 
     private function parse(): \Generator {
@@ -73,7 +87,7 @@ class StreamingJsonParser implements Iterator {
     private function handleLine(string $line) {
         try {
             $decodedLine = decode($line, $this->assoc, $this->depth, $this->options);
-            $this->emitter->emit($decodedLine);
+            $this->backpressure = $this->emitter->emit($decodedLine);
         } catch (DecodeErrorException $e) {
             $this->emitter->fail($e);
             $this->emitter = null;
