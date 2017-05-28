@@ -2,16 +2,15 @@
 
 namespace Kelunik\StreamingJson;
 
-use Amp\ByteStream;
 use Amp\ByteStream\InputStream;
 use Amp\ByteStream\Parser;
-use function Amp\call;
 use Amp\CallableMaker;
 use Amp\Emitter;
 use Amp\Iterator;
 use Amp\Promise;
 use Amp\Success;
 use ExceptionalJSON\DecodeErrorException;
+use function Amp\call;
 use function ExceptionalJSON\decode;
 
 class StreamingJsonParser implements Iterator {
