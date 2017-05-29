@@ -11,7 +11,7 @@ composer require kelunik/streaming-json
 ## Usage
 
 ```php
-$parser = new Parser($inputStream);
+$parser = new StreamingJsonParser($inputStream);
 
 while (yield $parser->advance()) {
     $parsedItem = $parser->getCurrent();
