@@ -68,7 +68,7 @@ class StreamingJsonParser implements Iterator {
         if ($error) {
             $this->emitter->fail($error);
         } else {
-            $remainingBuffer = $this->parser->getBuffer();
+            $remainingBuffer = $this->parser->cancel();
 
             if (\trim($remainingBuffer) !== "") {
                 $this->handleLine($remainingBuffer);
