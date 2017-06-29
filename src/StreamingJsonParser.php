@@ -3,8 +3,6 @@
 namespace Kelunik\StreamingJson;
 
 use Amp\ByteStream\InputStream;
-use Amp\ByteStream\Parser;
-use Amp\CallableMaker;
 use Amp\Emitter;
 use Amp\Iterator;
 use Amp\Promise;
@@ -14,17 +12,13 @@ use function Amp\call;
 use function ExceptionalJSON\decode;
 
 class StreamingJsonParser implements Iterator {
-    use CallableMaker;
-
-    private $source;
-    private $parser;
-    private $emitter;
-    private $iterator;
-
     private $assoc;
     private $depth;
     private $options;
 
+    private $source;
+    private $emitter;
+    private $iterator;
     private $backpressure;
 
     public function __construct(InputStream $inputStream, bool $assoc = false, $depth = 512, int $options = 0) {
@@ -32,31 +26,34 @@ class StreamingJsonParser implements Iterator {
         $this->depth = $depth;
         $this->options = $options;
 
-        $this->backpressure = new Success;
         $this->source = $inputStream;
         $this->emitter = new Emitter;
         $this->iterator = $this->emitter->iterate();
-        $this->parser = new Parser($this->parse());
+        $this->backpressure = new Success;
 
-        call($this->callableFromInstanceMethod("pipe"))->onResolve($this->callableFromInstanceMethod("handleStreamEnd"));
+        call(function () {
+            return $this->pipe();
+        })->onResolve(function ($error) {
+            $this->handleStreamEnd($error);
+        });
     }
 
     private function pipe(): \Generator {
+        $buffer = "";
+
         while (null !== $chunk = yield $this->source->read()) {
-            yield $this->parser->write($chunk);
-            yield $this->backpressure;
-        }
-    }
+            $buffer .= $chunk;
 
-    private function parse(): \Generator {
-        while (true) {
-            $line = yield "\r\n";
-
-            if (trim($line) === "") {
-                continue;
+            while (($pos = \strpos($buffer, "\r\n")) !== false) {
+                $this->handleLine(\substr($buffer, 0, $pos));
+                $buffer = \substr($buffer, $pos + 1);
             }
 
-            $this->handleLine($line);
+            yield $this->backpressure;
+        }
+
+        if ($buffer !== "") {
+            $this->handleLine($buffer);
         }
     }
 
@@ -65,22 +62,14 @@ class StreamingJsonParser implements Iterator {
             return;
         }
 
-        if ($error) {
-            $this->emitter->fail($error);
-        } else {
-            $remainingBuffer = $this->parser->cancel();
-
-            if (\trim($remainingBuffer) !== "") {
-                $this->handleLine($remainingBuffer);
-            }
-
-            // The remaining buffer might not be a complete JSON message and then fail the emitter
-            if ($this->emitter) {
-                $this->emitter->complete();
-            }
-        }
-
+        $emitter = $this->emitter;
         $this->emitter = null;
+
+        if ($error) {
+            $emitter->fail($error);
+        } else {
+            $emitter->complete();
+        }
     }
 
     private function handleLine(string $line) {
@@ -88,8 +77,9 @@ class StreamingJsonParser implements Iterator {
             $decodedLine = decode($line, $this->assoc, $this->depth, $this->options);
             $this->backpressure = $this->emitter->emit($decodedLine);
         } catch (DecodeErrorException $e) {
-            $this->emitter->fail($e);
+            $emitter = $this->emitter;
             $this->emitter = null;
+            $emitter->fail($e);
         }
     }
 

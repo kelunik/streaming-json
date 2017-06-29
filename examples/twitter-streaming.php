@@ -1,7 +1,7 @@
 <?php
 
+use Amp\Artax\BasicClient;
 use Amp\Artax\Client;
-use Amp\Artax\Cookie\NullCookieJar;
 use Amp\Artax\Request;
 use Amp\Artax\Response;
 use Amp\Loop;
@@ -26,7 +26,7 @@ Loop::run(function () use ($argv) {
     $nonce = bin2hex(random_bytes(16));
     $timestamp = time();
 
-    $client = new Client(new NullCookieJar);
+    $client = new BasicClient;
     $client->setOption(Client::OP_TRANSFER_TIMEOUT, 0);
     $client->setOption(Client::OP_MAX_BODY_BYTES, -1);
 
