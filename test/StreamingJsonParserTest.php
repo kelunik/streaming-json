@@ -4,12 +4,11 @@ namespace Kelunik\StreamingJson\Test;
 
 use Amp\ByteStream\InputStream;
 use Amp\ByteStream\IteratorStream;
-use Amp\ByteStream\PendingReadException;
-use function Amp\Iterator\fromIterable;
 use Amp\Loop;
 use Amp\PHPUnit\TestCase;
 use Amp\Promise;
 use Kelunik\StreamingJson\StreamingJsonParser;
+use function Amp\Iterator\fromIterable;
 
 class StreamingJsonParserTest extends TestCase {
     public function test() {
