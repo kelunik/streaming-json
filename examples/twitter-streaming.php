@@ -1,7 +1,7 @@
 <?php
 
-use Amp\Artax\DefaultClient;
 use Amp\Artax\Client;
+use Amp\Artax\DefaultClient;
 use Amp\Artax\Request;
 use Amp\Artax\Response;
 use Amp\Loop;
