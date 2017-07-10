@@ -21,7 +21,7 @@
         "daverandom/exceptional-json": "^1.0.1"
     },
     "require-dev": {
-        "amphp/artax": "dev-master",
+        "amphp/artax": "^3",
         "amphp/phpunit-util": "^1",
         "friendsofphp/php-cs-fixer": "^2.3"
     }

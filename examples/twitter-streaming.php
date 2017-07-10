@@ -1,6 +1,6 @@
 <?php
 
-use Amp\Artax\BasicClient;
+use Amp\Artax\DefaultClient;
 use Amp\Artax\Client;
 use Amp\Artax\Request;
 use Amp\Artax\Response;
@@ -15,20 +15,20 @@ Loop::set(new Loop\NativeDriver);
 Loop::run(function () use ($argv) {
     // Create an app on https://apps.twitter.com/ and get your app credentials and a token for your own account
 
-    $consumerKey = "...";
-    $consumerSecret = "...";
+    $consumerKey = "";
+    $consumerSecret = "";
 
-    $token = "...";
-    $tokenSecret = "...";
+    $token = "";
+    $tokenSecret = "";
 
     // ^------------------------ FILL IN ----------------------------------------------------------------------
 
     $nonce = bin2hex(random_bytes(16));
     $timestamp = time();
 
-    $client = new BasicClient;
+    $client = new DefaultClient;
     $client->setOption(Client::OP_TRANSFER_TIMEOUT, 0);
-    $client->setOption(Client::OP_MAX_BODY_BYTES, -1);
+    $client->setOption(Client::OP_MAX_BODY_BYTES, 0);
 
     $params = [
         "oauth_consumer_key" => $consumerKey,
